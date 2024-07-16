@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario{
+  id Int @id @default(autoincrement())
+  nombre String
+  apellido String
+  email String
+  tipoDocumento String
+  documento String @unique
+  clave String
+  createAt DateTime @default(now())
+  updateAt DateTime
+  imagen String
+  Rol Rol @relation(fields: [rolId], references: [id]) 
+  rolId Int
+  venta Venta[]
+}
+
+model Rol{
+  id Int @id @default(autoincrement())
+  nombre String
+  estado Boolean @default(true)
+  createAt DateTime @default(now())
+  usuario Usuario[]
+  rolOpcion Rol_Opcion[]
+}
+
+model Opcion{
+  id Int @id @default(autoincrement())
+  nombre String
+  estado Boolean @default(true)
+  createAt DateTime @default(now())
+  rolOpcion Rol_Opcion[]
+}
+
+model Rol_Opcion{
+  id Int @id @default(autoincrement())
+  rol Rol @relation(fields: [rolId], references: [id])
+  rolId Int
+  opcion Opcion @relation(fields: [opcionId],references: [id])
+  opcionId Int
+}
+
+model Categoria{
+  id Int @id @default(autoincrement())
+  nombre String
+  descripcion String
+  estado Boolean @default(true)
+  createAt DateTime @default(now())
+  updateAt DateTime
+  producto Producto[]
+}
+
+model Producto{
+  id Int @id @default(autoincrement())
+  nombre String
+  descripcion String?
+  marca String
+  stock Int
+  precioCosto Float @default(0.0)
+  precioVenta Float @default(0.0)
+  Categoria Categoria @relation(fields: [categoriaId],references: [id])
+  categoriaId Int
+  imagen String
+  estado Boolean @default(true)
+  createAt DateTime @default(now())
+  updateAt DateTime
+  inventario Inventario[]
+  proveedor Proveedor[]
+  detalle Detalle_Venta[]
+}
+
+model Inventario{
+  id Int @id @default(autoincrement())
+  producto Producto @relation(fields: [productoId], references: [id])
+  productoId Int
+  cantidad Int
+  motivo String
+  stockAnterior Int
+  stockActual Int
+  fechaMovimiento DateTime @default(now())
+}
+
+model Proveedor{
+  id Int @id @default(autoincrement())
+  nombre String
+  representante String
+  ruc String
+  telefefono String
+  email String
+  Producto Producto @relation(fields: [productoId], references: [id])
+  productoId Int
+}
+
+model Cliente{
+  id Int @id @default(autoincrement())
+  nombre String
+  documento String
+  createAt DateTime @default(now())
+  venta Venta[]
+}
+
+model Venta{
+  id Int @id @default(autoincrement())
+  numeroVenta String @default(uuid())
+  fechaVenta DateTime @default(now())
+  precioTotal Float
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+  clienteId Int
+  usuario Usuario @relation(fields: [usuarioId],references: [id])
+  usuarioId Int
+  detalle Detalle_Venta[]
+}
+
+model Detalle_Venta{
+  id Int @id @default(autoincrement())
+  venta Venta @relation(fields: [ventaId],references: [id])
+  ventaId Int
+  producto Producto @relation(fields: [productoId],references: [id])
+  productoId Int
+  cantindad Int
+  precio Float
+}
